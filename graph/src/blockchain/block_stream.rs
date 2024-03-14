@@ -564,6 +564,8 @@ pub struct BlockStreamMetrics {
     pub deployment_failed: Box<Gauge>,
     pub reverted_blocks: Gauge,
     pub stopwatch: StopwatchMetrics,
+    pub subgraph_name: String, // Dynamic subgraphName field
+    pub subgraph_version: String, // Version of the subgraph
 }
 
 impl BlockStreamMetrics {
@@ -573,6 +575,7 @@ impl BlockStreamMetrics {
         network: String,
         shard: String,
         stopwatch: StopwatchMetrics,
+        subgraph_version: String,
     ) -> Self {
         let reverted_blocks = registry
             .new_deployment_gauge(
@@ -584,7 +587,10 @@ impl BlockStreamMetrics {
         let labels = labels! {
             String::from("deployment") => deployment_id.to_string(),
             String::from("network") => network,
-            String::from("shard") => shard
+            String::from("shard") => shard,
+            // No subgraphName label here since it's dynamic
+            String::from("subgraph_version") => subgraph_version.clone(), 
+
         };
         let deployment_head = registry
             .new_gauge(
@@ -605,7 +611,14 @@ impl BlockStreamMetrics {
             deployment_failed,
             reverted_blocks,
             stopwatch,
+            subgraph_name: String::new(),
+            subgraph_version,
+            
         }
+    }
+    // Sets or updates the subgraph name dynamically
+    pub fn set_subgraph_name(&mut self, subgraph_name: String){
+        self.subgraph_name =subgraph_name;
     }
 }
 
